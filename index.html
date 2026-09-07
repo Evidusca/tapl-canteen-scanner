@@ -626,7 +626,7 @@ function callBackend(action, params, onSuccess, onFailure) {
 
             result.innerHTML = `
               <div class="success">
-              <h3>Meal Token Ready</h3>
+              <h3>${response.message}</h3>
                 <p><strong>${response.fullName}</strong></p>
                 <p>Staff ID: <strong>${response.staffId}</strong></p>
                 <div class="token">${response.token}</div>
