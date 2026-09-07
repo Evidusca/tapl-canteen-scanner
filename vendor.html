@@ -370,17 +370,7 @@
     .scan-status{font-size:13px;color:#666;margin-top:10px}
   </style>
 
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript">
-window.addEventListener('DOMContentLoaded', function() {
-  if (vendorSessionToken) {
-    const authCard = document.getElementById('vendorAuthCard');
-    if (authCard) authCard.style.display = 'none';
-    const portal = document.getElementById('vendorPortal');
-    if (portal) portal.style.display = 'block';
-  }
-});
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
 </head>
 
 
@@ -394,7 +384,6 @@ window.addEventListener('DOMContentLoaded', function() {
           id="loginVendorName"
           placeholder="Vendor name"
           autocomplete="organization"
-          autocomplete="organization"
         >
         <input
           type="password"
@@ -407,9 +396,7 @@ window.addEventListener('DOMContentLoaded', function() {
         </button>
         <div id="vendorAuthStatus"></div>
         <div id="signedInVendor" style="margin-top:8px;font-weight:600;"></div>
-      
-
-
+      </div>
 
 <div id="vendorPortal" style="display:none;"><div class="container">
 
@@ -429,11 +416,6 @@ window.addEventListener('DOMContentLoaded', function() {
 </div>
 
 
-  <label for="vendorName">
-
-    Vendor Name
-
-  </label>
 <div class="scanner-section">
     <strong style="color:#F57C00;">Scan Employee QR Code</strong>
     <button type="button" class="scan-button" id="scanButton" onclick="openScanner()">SCAN QR CODE</button>
@@ -579,10 +561,6 @@ function vendorLogin() {
         vendorSessionToken = response.sessionToken;
         sessionStorage.setItem('taplVendorSessionToken', vendorSessionToken);
 
-        // Populate the main vendor field used by the existing workflow.
-        const mainVendorName = document.getElementById('vendorName');
-        if (mainVendorName) mainVendorName.value = response.vendorName;
-
         status.innerText = 'Signed in successfully.';
         const signedIn = document.getElementById('signedInVendor');
         if (signedIn) signedIn.innerText = 'Signed in as: ' + response.vendorName;
@@ -672,6 +650,16 @@ function callBackend(action, params, onSuccess, onFailure) {
   }, 20000);
 }
 
+
+window.addEventListener('DOMContentLoaded', function() {
+  if (vendorSessionToken) {
+    const authCard = document.getElementById('vendorAuthCard');
+    if (authCard) authCard.style.display = 'none';
+    const portal = document.getElementById('vendorPortal');
+    if (portal) portal.style.display = 'block';
+  }
+});
+
 function verifyToken() {
 
   if (!ensureVendorSession()) return;
@@ -686,37 +674,9 @@ function verifyToken() {
     .trim();
 
 
-  const vendorName = document
-
-    .getElementById('vendorName')
-
-    .value
-
-    .trim();
-
-
   const result = document
 
     .getElementById('result');
-
-
-  if (!vendorName) {
-
-
-    result.innerHTML = `
-
-      <div class="invalid">
-
-        Please enter the vendor's name.
-
-      </div>
-
-    `;
-
-
-    return;
-
-  }
 
 
   if (!token) {
@@ -980,25 +940,6 @@ function grantMeal() {
   const grantButton = document
 
     .getElementById('grantButton');
-
-
-  if (!vendorName) {
-
-
-    result.innerHTML = `
-
-      <div class="invalid">
-
-        Please enter the vendor's name.
-
-      </div>
-
-    `;
-
-
-    return;
-
-  }
 
 
   // Disable button while processing
