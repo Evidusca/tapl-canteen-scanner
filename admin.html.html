@@ -15,7 +15,7 @@ h1{margin:5px 0}
 input{width:100%;padding:13px;border:1px solid #ccc;border-radius:8px;margin:7px 0 14px;font-size:16px}
 button{border:0;border-radius:8px;padding:13px 18px;font-weight:bold;cursor:pointer}
 .primary{width:100%;background:#16833b;color:white}
-.logout{background:#eee}
+.logout{background:#eee}.periodButton{background:#eee;color:#222}.periodButton:hover{opacity:.85}label{display:block;font-size:13px;color:#666;margin-bottom:3px}
 #dashboard{display:none}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
 .stat{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
@@ -54,13 +54,38 @@ th,td{text-align:left;padding:11px;border-bottom:1px solid #eee;font-size:14px}
         </div>
         <button class="logout" onclick="location.reload()">SIGN OUT</button>
       </div>
+
+      <div style="margin-top:20px;border-top:1px solid #eee;padding-top:18px;">
+        <strong>Report Period</strong>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;">
+          <button class="periodButton" onclick="setPeriod('today')">Today</button>
+          <button class="periodButton" onclick="setPeriod('yesterday')">Yesterday</button>
+          <button class="periodButton" onclick="setPeriod('week')">This Week</button>
+          <button class="periodButton" onclick="setPeriod('month')">This Month</button>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end;">
+          <div style="flex:1;min-width:180px;">
+            <label for="startDate">From</label>
+            <input id="startDate" type="date">
+          </div>
+          <div style="flex:1;min-width:180px;">
+            <label for="endDate">To</label>
+            <input id="endDate" type="date">
+          </div>
+          <button class="primary" style="width:auto;" onclick="loadDashboard()">RUN REPORT</button>
+        </div>
+
+        <div id="reportMessage" class="message"></div>
+      </div>
     </div>
 
     <div class="grid">
-      <div class="stat"><h3>TOKENS TODAY</h3><strong id="tokensToday">0</strong></div>
+      <div class="stat"><h3>TOKENS IN PERIOD</h3><strong id="tokensToday">0</strong></div>
       <div class="stat"><h3>MEALS GRANTED</h3><strong id="usedToday">0</strong></div>
       <div class="stat"><h3>UNUSED TOKENS</h3><strong id="unusedToday">0</strong></div>
-      <div class="stat"><h3>OTHER/EXPIRED</h3><strong id="expiredOrOther">0</strong></div>
+      
     </div>
 
     <div class="card">
@@ -121,7 +146,7 @@ function login(){
       sessionToken=r.sessionToken;
       document.getElementById('login').style.display='none';
       document.getElementById('dashboard').style.display='block';
-      loadDashboard();
+      setPeriod('today');
     }else{
       btn.disabled=false;btn.textContent='SIGN IN';
       msg.textContent=(r&&r.message)||'Authentication failed.';
@@ -132,32 +157,102 @@ function login(){
   });
 }
 
+function localDateString(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+
+function setPeriod(type){
+  const now=new Date();
+  let start=new Date(now);
+  let end=new Date(now);
+
+  if(type==='yesterday'){
+    start.setDate(now.getDate()-1);
+    end=new Date(start);
+  }else if(type==='week'){
+    const day=now.getDay(); // Sunday = 0
+    start.setDate(now.getDate()-day);
+  }else if(type==='month'){
+    start=new Date(now.getFullYear(),now.getMonth(),1);
+  }
+
+  document.getElementById('startDate').value=localDateString(start);
+  document.getElementById('endDate').value=localDateString(end);
+
+  loadDashboard();
+}
+
 function loadDashboard(){
-  api('adminDashboard',{sessionToken},r=>{
-    if(!r||!r.success){
-      alert((r&&r.message)||'Could not load dashboard.');
-      return;
+  const startDate=document.getElementById('startDate').value;
+  const endDate=document.getElementById('endDate').value;
+  const msg=document.getElementById('reportMessage');
+
+  if(!startDate || !endDate){
+    msg.textContent='Select a start and end date.';
+    return;
+  }
+
+  if(startDate>endDate){
+    msg.textContent='Start date cannot be after end date.';
+    return;
+  }
+
+  msg.textContent='Loading report...';
+
+  api(
+    'adminDashboard',
+    {
+      sessionToken:sessionToken,
+      startDate:startDate,
+      endDate:endDate
+    },
+    r=>{
+      if(!r||!r.success){
+        msg.textContent=(r&&r.message)||'Could not load dashboard.';
+        return;
+      }
+
+      msg.textContent='';
+
+      document.getElementById('dateText').textContent=
+        'Report: '+esc(r.startDate)+' — '+esc(r.endDate);
+
+      document.getElementById('tokensToday').textContent=r.tokensToday;
+      document.getElementById('usedToday').textContent=r.usedToday;
+      document.getElementById('unusedToday').textContent=r.unusedToday;
+
+      const vendors=r.mealsByVendor||[];
+
+      document.getElementById('vendorTable').innerHTML=
+        vendors.length
+        ? vendors.map(v=>
+            '<tr><td>'+esc(v.name)+'</td><td>'+esc(v.meals)+'</td></tr>'
+          ).join('')
+        : '<tr><td colspan="2">No meals recorded in this period.</td></tr>';
+
+      const meals=r.recentMeals||[];
+
+      document.getElementById('recentTable').innerHTML=
+        meals.length
+        ? meals.map(x=>
+            '<tr>' +
+              '<td>'+esc(x.time)+'</td>' +
+              '<td>'+esc(x.staffId)+'</td>' +
+              '<td>'+esc(x.fullName)+'</td>' +
+              '<td>'+esc(x.token)+'</td>' +
+              '<td>'+esc(x.recordId)+'</td>' +
+            '</tr>'
+          ).join('')
+        : '<tr><td colspan="5">No meal records in this period.</td></tr>';
+
+    },
+    e=>{
+      msg.textContent=e.message||'Could not load dashboard.';
     }
-
-    document.getElementById('dateText').textContent='Date: '+esc(r.date);
-    document.getElementById('tokensToday').textContent=r.tokensToday;
-    document.getElementById('usedToday').textContent=r.usedToday;
-    document.getElementById('unusedToday').textContent=r.unusedToday;
-    document.getElementById('expiredOrOther').textContent=r.expiredOrOther;
-
-    const vendors=r.mealsByVendor||{};
-    document.getElementById('vendorTable').innerHTML=
-      Object.keys(vendors).length
-      ? Object.keys(vendors).map(v=>'<tr><td>'+esc(v)+'</td><td>'+esc(vendors[v])+'</td></tr>').join('')
-      : '<tr><td colspan="2">No meals recorded today.</td></tr>';
-
-    const meals=r.recentMeals||[];
-    document.getElementById('recentTable').innerHTML=
-      meals.length
-      ? meals.map(x=>'<tr><td>'+esc(x.time)+'</td><td>'+esc(x.staffId)+'</td><td>'+esc(x.fullName)+'</td><td>'+esc(x.token)+'</td><td>'+esc(x.recordId)+'</td></tr>').join('')
-      : '<tr><td colspan="5">No meal records yet.</td></tr>';
-
-  },e=>alert(e.message));
+  );
 }
 </script>
 </body>
