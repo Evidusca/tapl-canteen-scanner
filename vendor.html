@@ -3,7 +3,7 @@
 
 <head>
 
-  <base target="_top">
+  <base target="_self">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -374,130 +374,405 @@
 </head>
 
 
+
 <body>
 
-      <div class="card" id="vendorAuthCard">
-        <h2>Vendor Sign In</h2>
-        <p>Authorized vendors only.</p>
-        <input
-          type="text"
-          id="loginVendorName"
-          placeholder="Vendor name"
-          autocomplete="organization"
-        >
-        <input
-          type="password"
-          id="vendorPin"
-          placeholder="Vendor PIN"
-          autocomplete="current-password"
-        >
-        <button type="button" class="verify-button" id="vendorLoginButton" onclick="vendorLogin()">
-          SIGN IN
-        </button>
-        <div id="vendorAuthStatus"></div>
-        <div id="signedInVendor" style="margin-top:8px;font-weight:600;"></div>
-      </div>
+  <!-- ==============================
+       VENDOR SIGN-IN — FIRST SCREEN
+  =============================== -->
+  <div class="container" id="vendorAuthCard">
 
-<div id="vendorPortal" style="display:none;"><div class="container">
+    <div class="header">
+      <img
+        src="https://evidusca.github.io/tapl-canteen-scanner/transafam-logo.png"
+        class="logo"
+        alt="TransAfam Power"
+      >
 
-
-<div class="header">
-
-  <img
-    src="https://evidusca.github.io/tapl-canteen-scanner/transafam-logo.png"
-    class="logo"
-    alt="TransAfam Power"
-  >
-
-  <h1>Canteen Vendor Portal</h1>
-
-  <p>Verify employee meal tokens</p>
-
-</div>
-
-
-<div class="scanner-section">
-    <strong style="color:#F57C00;">Scan Employee QR Code</strong>
-    <button type="button" class="scan-button" id="scanButton" onclick="openScanner()">SCAN QR CODE</button>
-    <div id="scanStatus" class="scan-status">Tap SCAN QR CODE to open the camera scanner.</div>
-  </div>
-
-  <div style="margin-top:25px;border-top:1px solid #eeeeee;padding-top:20px;">
-    <div style="text-align:center;color:#777;font-size:13px;margin-bottom:10px;">
-      OR ENTER TOKEN MANUALLY
+      <h1>Vendor Sign In</h1>
+      <p>Authorized vendors only</p>
     </div>
 
+    <label for="loginVendorName">Vendor Name</label>
 
+    <input
+      type="text"
+      id="loginVendorName"
+      placeholder="Enter vendor name"
+      autocomplete="organization"
+      autocapitalize="none"
+    >
 
-  <label for="token">
+    <label for="vendorPin">PIN</label>
 
-    Employee Token
+    <input
+      type="password"
+      id="vendorPin"
+      placeholder="Enter your PIN"
+      autocomplete="current-password"
+    >
 
-  </label></div>
+    <button
+      type="button"
+      class="verify-button"
+      id="vendorLoginButton"
+      onclick="vendorLogin()"
+    >
+      SIGN IN
+    </button>
 
+    <div id="vendorAuthStatus" style="margin-top:15px;text-align:center;"></div>
 
-
-  <input
-
-    type="text"
-
-    id="token"
-
-    placeholder="Example: CAN-123456"
-
-    oninput="this.value = this.value.toUpperCase()"
-
-  >
   </div>
 
-<button
 
-    type="button"
+  <!-- ==============================
+       VENDOR PORTAL — HIDDEN UNTIL LOGIN
+  =============================== -->
+  <div id="vendorPortal" style="display:none;">
 
-    class="verify-button"
+    <div class="container">
 
-    id="verifyButton"
+      <div class="header">
 
-    onclick="verifyToken()"
+        <img
+          src="https://evidusca.github.io/tapl-canteen-scanner/transafam-logo.png"
+          class="logo"
+          alt="TransAfam Power"
+        >
 
-  >
+        <h1>Canteen Vendor Portal</h1>
 
-    Verify Token
+        <p id="signedInVendor">Verify employee meal tokens</p>
 
-  </button>
-
-
-  <div id="result"></div>
+      </div>
 
 
-</div>
+      <div class="scanner-section">
+
+        <strong style="color:#F57C00;">
+          Scan Employee QR Code
+        </strong>
+
+        <button
+          type="button"
+          class="scan-button"
+          id="scanButton"
+          onclick="openScanner()"
+        >
+          SCAN QR CODE
+        </button>
+
+        <div id="scanStatus" class="scan-status">
+          Tap SCAN QR CODE to open the camera scanner.
+        </div>
+
+      </div>
+
+
+      <div style="margin-top:25px;border-top:1px solid #eeeeee;padding-top:20px;">
+
+        <div style="text-align:center;color:#777;font-size:13px;margin-bottom:10px;">
+          OR ENTER TOKEN MANUALLY
+        </div>
+
+        <label for="token">
+          Employee Token
+        </label>
+
+        <input
+          type="text"
+          id="token"
+          placeholder="Example: CAN-123456"
+          oninput="this.value = this.value.toUpperCase()"
+        >
+
+      </div>
+
+
+      <button
+        type="button"
+        class="verify-button"
+        id="verifyButton"
+        onclick="verifyToken()"
+      >
+        VERIFY TOKEN
+      </button>
+
+
+      <div id="result"></div>
+
+    </div>
+
+  </div>
+
+
+  <div class="brand-footer">
+    <span class="made-by">Made by </span>
+    <span class="evidusca">Evidusca </span>
+    <span class="technologies">Technologies</span>
+  </div>
 
 
 <script>
 
-
 let verifiedToken = null;
-let vendorSessionToken = sessionStorage.getItem('taplVendorSessionToken') || null;
-
-
 let verifiedRow = null;
+let vendorSessionToken = null;
 
+const BACKEND_URL =
+  'https://script.google.com/macros/s/AKfycbwnFk3S8dVmzx2mvJotn-9WkXU_myP0PQoOMb-IoMYs0QesnsULFGBqge3JbuNdLkYQ/exec';
 
+const SCANNER_URL =
+  'https://evidusca.github.io/tapl-canteen-scanner/Scanner.html';
 
-
-const SCANNER_URL = 'https://evidusca.github.io/tapl-canteen-scanner/Scanner.html';
 let scannerWindow = null;
 
-function openScanner() {
-  const status = document.getElementById('scanStatus');
 
-  if (!SCANNER_URL || SCANNER_URL.indexOf('YOUR-SCANNER-DOMAIN') !== -1) {
-    status.innerText = 'Scanner URL is not configured.';
+// ============================================================
+// GITHUB PAGES -> APPS SCRIPT JSONP CLIENT
+// ============================================================
+
+function callBackend(action, params, onSuccess, onFailure) {
+
+  if (!BACKEND_URL) {
+    if (onFailure) {
+      onFailure(new Error('Apps Script backend URL is not configured.'));
+    }
     return;
   }
 
-  const returnOrigin = encodeURIComponent(window.location.origin);
-  const scannerUrl = SCANNER_URL + '?returnOrigin=' + returnOrigin;
+  const callbackName =
+    '__taplApi_' +
+    Date.now() +
+    '_' +
+    Math.floor(Math.random() * 100000);
+
+  const script = document.createElement('script');
+
+  let finished = false;
+
+  function cleanup() {
+
+    finished = true;
+
+    try {
+      delete window[callbackName];
+    } catch (e) {
+      window[callbackName] = undefined;
+    }
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+  }
+
+  window[callbackName] = function(response) {
+
+    if (finished) return;
+
+    cleanup();
+
+    if (onSuccess) {
+      onSuccess(response);
+    }
+  };
+
+  script.onerror = function() {
+
+    if (finished) return;
+
+    cleanup();
+
+    if (onFailure) {
+      onFailure(
+        new Error('Could not connect to the canteen server.')
+      );
+    }
+  };
+
+  const query = new URLSearchParams();
+
+  query.set('action', action);
+  query.set('callback', callbackName);
+
+  Object.keys(params || {}).forEach(function(key) {
+
+    query.set(
+      key,
+      params[key] == null ? '' : String(params[key])
+    );
+
+  });
+
+  script.src =
+    BACKEND_URL +
+    (BACKEND_URL.indexOf('?') === -1 ? '?' : '&') +
+    query.toString();
+
+  document.head.appendChild(script);
+
+  window.setTimeout(function() {
+
+    if (finished) return;
+
+    cleanup();
+
+    if (onFailure) {
+      onFailure(
+        new Error('The server took too long to respond.')
+      );
+    }
+
+  }, 20000);
+
+}
+
+
+// ============================================================
+// VENDOR LOGIN
+// ============================================================
+
+function vendorLogin() {
+
+  const vendorName =
+    document.getElementById('loginVendorName').value.trim();
+
+  const vendorPin =
+    document.getElementById('vendorPin').value.trim();
+
+  const status =
+    document.getElementById('vendorAuthStatus');
+
+  const button =
+    document.getElementById('vendorLoginButton');
+
+
+  if (!vendorName || !vendorPin) {
+
+    status.innerHTML =
+      '<span style="color:#E65100;">Enter your vendor name and PIN.</span>';
+
+    return;
+  }
+
+
+  button.disabled = true;
+  button.innerText = 'SIGNING IN...';
+
+  status.innerHTML =
+    '<span style="color:#F57C00;">Authenticating...</span>';
+
+
+  callBackend(
+    'vendorLogin',
+    {
+      vendorName: vendorName,
+      vendorPin: vendorPin
+    },
+
+    function(response) {
+
+      button.disabled = false;
+      button.innerText = 'SIGN IN';
+
+
+      if (response && response.success) {
+
+        vendorSessionToken =
+          response.sessionToken;
+
+        document.getElementById('vendorAuthCard')
+          .style.display = 'none';
+
+        document.getElementById('vendorPortal')
+          .style.display = 'block';
+
+        document.getElementById('signedInVendor')
+          .innerHTML =
+          'Signed in as: <strong>' +
+          escapeHtml(response.vendorName) +
+          '</strong>';
+
+        status.innerHTML = '';
+
+      } else {
+
+        vendorSessionToken = null;
+
+        status.innerHTML =
+          '<span style="color:#E65100;">' +
+          escapeHtml(
+            (response && response.message) ||
+            'Authentication failed.'
+          ) +
+          '</span>';
+
+      }
+
+    },
+
+    function(error) {
+
+      button.disabled = false;
+      button.innerText = 'SIGN IN';
+
+      status.innerHTML =
+        '<span style="color:#E65100;">' +
+        escapeHtml(
+          error.message ||
+          'Could not connect to the server.'
+        ) +
+        '</span>';
+
+    }
+  );
+
+}
+
+
+// ============================================================
+// SECURITY: ESCAPE SERVER DATA BEFORE DISPLAY
+// ============================================================
+
+function escapeHtml(value) {
+
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+}
+
+
+// ============================================================
+// QR SCANNER
+// ============================================================
+
+function openScanner() {
+
+  if (!vendorSessionToken) {
+
+    alert('Please sign in first.');
+
+    return;
+  }
+
+  const status =
+    document.getElementById('scanStatus');
+
+
+  const returnOrigin =
+    encodeURIComponent(window.location.origin);
+
+
+  const scannerUrl =
+    SCANNER_URL +
+    '?returnOrigin=' +
+    returnOrigin;
+
 
   scannerWindow = window.open(
     scannerUrl,
@@ -505,635 +780,366 @@ function openScanner() {
     'width=500,height=750,resizable=yes,scrollbars=yes'
   );
 
+
   if (!scannerWindow) {
-    status.innerText = 'The scanner window was blocked. Please allow pop-ups for this site and try again.';
+
+    status.innerText =
+      'The scanner window was blocked. Please allow pop-ups for this site and try again.';
+
     return;
   }
 
-  status.innerText = 'Scanner opened. Point the camera at the employee QR code.';
+
+  status.innerText =
+    'Scanner opened. Point the camera at the employee QR code.';
+
 }
+
 
 window.addEventListener('message', function(event) {
-  if (scannerWindow && event.source !== scannerWindow) return;
+
+  if (scannerWindow && event.source !== scannerWindow) {
+    return;
+  }
+
 
   const data = event.data || {};
-  if (data.type !== 'TAPL_QR_SCANNED') return;
 
-  const token = String(data.token || '').trim().toUpperCase();
+
+  if (data.type !== 'TAPL_QR_SCANNED') {
+    return;
+  }
+
+
+  const token =
+    String(data.token || '')
+      .trim()
+      .toUpperCase();
+
 
   if (!/^CAN-\d{6}$/.test(token)) {
+
     document.getElementById('scanStatus').innerText =
       'Invalid QR code. Please scan a TAPL employee token QR code.';
+
     return;
   }
+
 
   document.getElementById('token').value = token;
-  document.getElementById('scanStatus').innerText = 'QR code detected. Verifying...';
+
+
+  document.getElementById('scanStatus').innerText =
+    'QR code detected. Verifying...';
+
 
   scannerWindow = null;
+
+
   verifyToken();
+
 });
 
 
-function vendorLogin() {
-  const vendorName = document.getElementById('loginVendorName').value.trim();
-  const vendorPin = document.getElementById('vendorPin').value.trim();
-  const status = document.getElementById('vendorAuthStatus');
-  const button = document.getElementById('vendorLoginButton');
-
-  if (!vendorName || !vendorPin) {
-    status.innerText = 'Enter your vendor name and PIN.';
-    return;
-  }
-
-  button.disabled = true;
-  button.innerText = 'SIGNING IN...';
-  status.innerText = 'Authenticating...';
-
-  callBackend(
-    'vendorLogin',
-    { vendorName: vendorName, vendorPin: vendorPin },
-    function(response) {
-      button.disabled = false;
-      button.innerText = 'SIGN IN';
-
-      if (response.success) {
-        vendorSessionToken = response.sessionToken;
-        sessionStorage.setItem('taplVendorSessionToken', vendorSessionToken);
-
-        status.innerText = 'Signed in successfully.';
-        const signedIn = document.getElementById('signedInVendor');
-        if (signedIn) signedIn.innerText = 'Signed in as: ' + response.vendorName;
-        document.getElementById('vendorAuthCard').style.display = 'none';
-        const portal = document.getElementById('vendorPortal');
-        if (portal) portal.style.display = 'block';
-      } else {
-        vendorSessionToken = null;
-        sessionStorage.removeItem('taplVendorSessionToken');
-        status.innerText = response.message || 'Authentication failed.';
-      }
-    },
-    function(error) {
-      button.disabled = false;
-      button.innerText = 'SIGN IN';
-      status.innerText = error.message || 'Could not connect to the server.';
-    }
-  );
-}
-
-function ensureVendorSession() {
-  if (!vendorSessionToken) {
-    const status = document.getElementById('result');
-    if (status) {
-      status.innerHTML = '<div class="invalid"><h2>SIGN IN REQUIRED</h2><p>Please sign in as an authorized vendor first.</p></div>';
-    }
-    return false;
-  }
-  return true;
-}
-
-// ======================================
+// ============================================================
 // VERIFY TOKEN
-// ======================================
-
-
-
-
 // ============================================================
-// GITHUB PAGES -> APPS SCRIPT JSONP CLIENT
-// ============================================================
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwnFk3S8dVmzx2mvJotn-9WkXU_myP0PQoOMb-IoMYs0QesnsULFGBqge3JbuNdLkYQ/exec';
-
-function callBackend(action, params, onSuccess, onFailure) {
-  if (!BACKEND_URL || BACKEND_URL.indexOf('PASTE-YOUR-APPS-SCRIPT') !== -1) {
-    if (onFailure) onFailure(new Error('Apps Script backend URL is not configured.'));
-    return;
-  }
-
-  const callbackName = '__taplApi_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-  const script = document.createElement('script');
-  let finished = false;
-
-  const cleanup = function() {
-    finished = true;
-    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-    if (script.parentNode) script.parentNode.removeChild(script);
-  };
-
-  window[callbackName] = function(response) {
-    if (finished) return;
-    cleanup();
-    if (onSuccess) onSuccess(response);
-  };
-
-  script.onerror = function() {
-    if (finished) return;
-    cleanup();
-    if (onFailure) onFailure(new Error('Could not connect to the canteen server.'));
-  };
-
-  const query = new URLSearchParams();
-  query.set('action', action);
-  query.set('callback', callbackName);
-
-  Object.keys(params || {}).forEach(function(key) {
-    query.set(key, params[key] == null ? '' : String(params[key]));
-  });
-
-  script.src = BACKEND_URL + (BACKEND_URL.indexOf('?') === -1 ? '?' : '&') + query.toString();
-  document.head.appendChild(script);
-
-  window.setTimeout(function() {
-    if (finished) return;
-    cleanup();
-    if (onFailure) onFailure(new Error('The server took too long to respond.'));
-  }, 20000);
-}
-
-
-window.addEventListener('DOMContentLoaded', function() {
-  if (vendorSessionToken) {
-    const authCard = document.getElementById('vendorAuthCard');
-    if (authCard) authCard.style.display = 'none';
-    const portal = document.getElementById('vendorPortal');
-    if (portal) portal.style.display = 'block';
-  }
-});
 
 function verifyToken() {
 
-  if (!ensureVendorSession()) return;
+  if (!vendorSessionToken) {
+
+    alert('Please sign in first.');
+
+    return;
+  }
 
 
-  const token = document
-
-    .getElementById('token')
-
-    .value
-
-    .trim();
+  const token =
+    document.getElementById('token')
+      .value
+      .trim()
+      .toUpperCase();
 
 
-  const result = document
-
-    .getElementById('result');
+  const result =
+    document.getElementById('result');
 
 
   if (!token) {
 
-
-    result.innerHTML = `
-
-      <div class="invalid">
-
-        Please enter the employee token.
-
-      </div>
-
-    `;
-
+    result.innerHTML =
+      '<div class="invalid">' +
+      'Please enter the employee token.' +
+      '</div>';
 
     return;
-
   }
 
 
-  result.innerHTML = `
-
-    <p style="color: #F57C00;">
-
-      Verifying token...
-
-    </p>
-
-  `;
+  result.innerHTML =
+    '<p style="color:#F57C00;">Verifying token...</p>';
 
 
-  document
-
-    .getElementById('verifyButton')
-
+  document.getElementById('verifyButton')
     .disabled = true;
+
 
   callBackend(
     'verifyToken',
-    { token: token, sessionToken: vendorSessionToken },
+    {
+      token: token,
+      sessionToken: vendorSessionToken
+    },
+
     function(response) {
 
-
-      document
-
-        .getElementById('verifyButton')
-
+      document.getElementById('verifyButton')
         .disabled = false;
 
 
-      if (response.success) {
-
+      if (response && response.success) {
 
         verifiedToken = response.token;
-
         verifiedRow = response.rowNumber;
 
 
-        result.innerHTML = `
+        result.innerHTML =
+          '<div class="valid">' +
 
-          <div class="valid">
+            '<h2>VALID TOKEN</h2>' +
 
+            '<div class="employee-name">' +
+              escapeHtml(response.fullName) +
+            '</div>' +
 
-            <h2>VALID TOKEN</h2>
+            '<div class="details">' +
 
+              '<strong>Staff ID:</strong> ' +
+              escapeHtml(response.staffId) +
 
-            <div class="employee-name">
+              '<br>' +
 
-              ${response.fullName}
+              '<strong>Status:</strong> ' +
 
-            </div>
+              '<span class="status">' +
+                escapeHtml(response.status) +
+              '</span>' +
 
+            '</div>' +
 
-            <div class="details">
+            '<button ' +
+              'type="button" ' +
+              'class="grant-button" ' +
+              'id="grantButton" ' +
+              'onclick="grantMeal()">' +
 
-              <strong>Staff ID:</strong>
+              'GRANT MEAL' +
 
-              ${response.staffId}
+            '</button>' +
 
-              <br>
-
-
-              <strong>Status:</strong>
-
-              <span class="status">
-
-                ${response.status}
-
-              </span>
-
-            </div>
-
-
-            <button
-
-              type="button"
-
-              class="grant-button"
-
-              id="grantButton"
-
-              onclick="grantMeal()"
-
-            >
-
-              GRANT MEAL
-
-            </button>
-
-
-          </div>
-
-        `;
-
+          '</div>';
 
       } else {
 
+        if (response && response.status === 'Used') {
 
-        if (response.status === 'Used') {
+          result.innerHTML =
+            '<div class="used">' +
 
+              '<h2>ALREADY USED</h2>' +
 
-          result.innerHTML = `
+              '<p>' +
+                escapeHtml(response.message) +
+              '</p>' +
 
-            <div class="used">
+              '<p>Employee: <strong>' +
+                escapeHtml(response.fullName || 'Unknown') +
+              '</strong></p>' +
 
-              <h2>ALREADY USED</h2>
-
-              <p>
-
-                ${response.message}
-
-              </p>
-
-              <p>
-
-                Employee:
-
-                <strong>
-
-                  ${response.fullName || 'Unknown'}
-
-                </strong>
-
-              </p>
-
-            </div>
-
-          `;
-
+            '</div>';
 
         } else {
 
+          result.innerHTML =
+            '<div class="invalid">' +
 
-          result.innerHTML = `
+              '<h2>ACCESS DENIED</h2>' +
 
-            <div class="invalid">
+              '<p>' +
+                escapeHtml(
+                  (response && response.message) ||
+                  'Token could not be verified.'
+                ) +
+              '</p>' +
 
-              <h2>ACCESS DENIED</h2>
-
-              <p>
-
-                ${response.message}
-
-              </p>
-
-            </div>
-
-          `;
-
+            '</div>';
 
         }
 
-
       }
 
-
     },
+
     function(error) {
 
-
-      document
-
-        .getElementById('verifyButton')
-
+      document.getElementById('verifyButton')
         .disabled = false;
 
 
-      result.innerHTML = `
+      result.innerHTML =
+        '<div class="invalid">' +
 
-        <div class="invalid">
+          '<h2>ERROR</h2>' +
 
-          <h2>ERROR</h2>
+          '<p>' +
+            escapeHtml(
+              error.message ||
+              'An error occurred while verifying the token.'
+            ) +
+          '</p>' +
 
-          <p>
-
-            An error occurred while verifying the token.
-
-            Please try again.
-
-          </p>
-
-        </div>
-
-      `;
-
-
-      console.log(error);
-
+        '</div>';
 
     }
   );
 
-
 }
 
 
-
-// ======================================
+// ============================================================
 // GRANT MEAL
-// ======================================
-
+// ============================================================
 
 function grantMeal() {
 
-  if (!ensureVendorSession()) return;
+  if (!vendorSessionToken) {
 
+    alert('Your vendor session has expired. Please sign in again.');
 
-  console.log('Grant Meal button clicked');
+    return;
+  }
 
 
   if (!verifiedToken) {
 
-
-    alert(
-
-      'Please verify a valid token first.'
-
-    );
-
+    alert('Please verify a valid token first.');
 
     return;
-
   }
 
 
-  const vendorName = document
-
-    .getElementById('vendorName')
-
-    .value
-
-    .trim();
+  const result =
+    document.getElementById('result');
 
 
-  const result = document
+  const grantButton =
+    document.getElementById('grantButton');
 
-    .getElementById('result');
-
-
-  const grantButton = document
-
-    .getElementById('grantButton');
-
-
-  // Disable button while processing
 
   grantButton.disabled = true;
-
   grantButton.innerText = 'PROCESSING...';
 
 
-  result.innerHTML = `
+  result.innerHTML =
+    '<p style="color:#F57C00;">Granting meal access...</p>';
 
-    <p style="color: #F57C00;">
-
-      Granting meal access...
-
-    </p>
-
-  `;
 
   callBackend(
     'grantMeal',
-    { token: verifiedToken, sessionToken: vendorSessionToken },
+    {
+      token: verifiedToken,
+      sessionToken: vendorSessionToken
+    },
+
     function(response) {
 
-
-      console.log(
-
-        'Grant response:',
-
-        response
-
-      );
-
-
       grantButton.disabled = false;
-
       grantButton.innerText = 'GRANT MEAL';
 
 
-      if (response.success) {
+      if (response && response.success) {
 
+        result.innerHTML =
+          '<div class="success-message">' +
 
-        result.innerHTML = `
+            '<h2>MEAL GRANTED</h2>' +
 
-          <div class="success-message">
+            '<p>Meal access has been successfully granted.</p>' +
 
+            '<p><strong>' +
+              escapeHtml(response.fullName) +
+            '</strong></p>' +
 
-            <h2>MEAL GRANTED</h2>
+            '<p>Staff ID: ' +
+              escapeHtml(response.staffId) +
+            '</p>' +
 
+            '<p>Time: ' +
+              escapeHtml(response.time) +
+            '</p>' +
 
-            <p>
+            '<p>Record ID: ' +
+              escapeHtml(response.recordId) +
+            '</p>' +
 
-              Meal access has been successfully granted.
-
-            </p>
-
-
-            <p>
-
-              <strong>
-
-                ${response.fullName}
-
-              </strong>
-
-            </p>
-
-
-            <p>
-
-              Staff ID:
-
-              ${response.staffId}
-
-            </p>
-
-
-            <p>
-
-              Time:
-
-              ${response.time}
-
-            </p>
-
-
-            <p>
-
-              Record ID:
-
-              ${response.recordId}
-
-            </p>
-
-
-          </div>
-
-        `;
+          '</div>';
 
 
         verifiedToken = null;
-
         verifiedRow = null;
 
+        document.getElementById('token').value = '';
 
-        document
-
-          .getElementById('token')
-
-          .value = '';
-
+        document.getElementById('scanStatus').innerText =
+          'Ready for the next employee.';
 
       } else {
 
+        result.innerHTML =
+          '<div class="invalid">' +
 
-        result.innerHTML = `
+            '<h2>MEAL NOT GRANTED</h2>' +
 
-          <div class="invalid">
+            '<p>' +
+              escapeHtml(
+                (response && response.message) ||
+                'Meal could not be granted.'
+              ) +
+            '</p>' +
 
-
-            <h2>MEAL NOT GRANTED</h2>
-
-
-            <p>
-
-              ${response.message}
-
-            </p>
-
-
-          </div>
-
-        `;
-
+          '</div>';
 
       }
 
-
     },
+
     function(error) {
 
-
-      console.error(
-
-        'Grant Meal Error:',
-
-        error
-
-      );
-
-
       grantButton.disabled = false;
-
       grantButton.innerText = 'GRANT MEAL';
 
 
-      result.innerHTML = `
+      result.innerHTML =
+        '<div class="invalid">' +
 
-        <div class="invalid">
+          '<h2>ERROR</h2>' +
 
+          '<p>' +
+            escapeHtml(
+              error.message ||
+              'An unknown error occurred.'
+            ) +
+          '</p>' +
 
-          <h2>ERROR</h2>
-
-
-          <p>
-
-            ${error.message ||
-
-            'An unknown error occurred.'}
-
-          </p>
-
-
-        </div>
-
-      `;
-
+        '</div>';
 
     }
   );
 
-
 }
-
 
 </script>
 
-
-  <div class="brand-footer">
-    <span class="made-by">Made by </span><span class="evidusca">Evidusca </span><span class="technologies">Technologies</span>
-  </div>
-
-
-</div>
 </body>
-
 </html>
