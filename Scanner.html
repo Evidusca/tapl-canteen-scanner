@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TAPL QR Scanner</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      padding:20px;
+      font-family:Arial,sans-serif;
+      background:#fff;
+      color:#333;
+    }
+    .container{
+      max-width:480px;
+      margin:20px auto;
+      background:#fff;
+      padding:25px;
+      border-radius:15px;
+      box-shadow:0 5px 25px rgba(0,0,0,.10);
+      text-align:center;
+    }
+    h1{
+      margin:0 0 8px;
+      color:#F57C00;
+      font-size:25px;
+    }
+    p{
+      color:#666;
+      line-height:1.5;
+    }
+    #reader{
+      width:100%;
+      margin:20px auto;
+      overflow:hidden;
+      border-radius:12px;
+    }
+    button{
+      width:100%;
+      padding:14px;
+      border:0;
+      border-radius:8px;
+      background:#F57C00;
+      color:#fff;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+      margin-top:10px;
+    }
+    button:disabled{opacity:.6}
+    .message{
+      margin-top:15px;
+      padding:14px;
+      border-radius:9px;
+      background:#fff5eb;
+      color:#E65100;
+      line-height:1.5;
+    }
+    .success{
+      background:#f2fff5;
+      color:#16803a;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>TAPL QR Scanner</h1>
+    <p>Point the camera at the employee's meal QR code.</p>
+
+    <div id="reader"></div>
+
+    <button id="startButton" onclick="startScanner()">START CAMERA</button>
+    <button id="stopButton" onclick="stopScanner()" style="display:none;background:#777;">STOP CAMERA</button>
+
+    <div id="message" class="message">
+      Tap START CAMERA and allow camera access when your browser asks.
+    </div>
+  </div>
+
+  <script>
+    let scanner = null;
+    let running = false;
+    let completed = false;
+
+    const params = new URLSearchParams(window.location.search);
+    const returnOrigin = params.get('returnOrigin');
+
+    function setMessage(text, success) {
+      const el = document.getElementById('message');
+      el.textContent = text;
+      el.className = success ? 'message success' : 'message';
+    }
+
+    function startScanner() {
+      if (completed || running) return;
+
+      if (typeof Html5Qrcode === 'undefined') {
+        setMessage('QR scanner library failed to load. Check your internet connection and reload this page.');
+        return;
+      }
+
+      if (!window.isSecureContext) {
+        setMessage('Camera access requires HTTPS. Make sure this scanner page is hosted with an HTTPS URL.');
+        return;
+      }
+
+      if (!returnOrigin) {
+        setMessage('The scanner was opened without a return address. Close this tab and open the scanner from the Vendor Portal.');
+        return;
+      }
+
+      const startButton = document.getElementById('startButton');
+      const stopButton = document.getElementById('stopButton');
+
+      startButton.disabled = true;
+      setMessage('Requesting camera permission...');
+
+      Html5Qrcode.getCameras()
+        .then(function(cameras) {
+          if (!cameras || cameras.length === 0) {
+            throw new Error('No camera was found on this device.');
+          }
+
+          let cameraId = cameras[0].id;
+
+          // Prefer a back/rear camera on phones.
+          const backCamera = cameras.find(function(camera) {
+            const label = String(camera.label || '').toLowerCase();
+            return label.includes('back') ||
+                   label.includes('rear') ||
+                   label.includes('environment');
+          });
+
+          if (backCamera) {
+            cameraId = backCamera.id;
+          }
+
+          scanner = new Html5Qrcode('reader');
+
+          return scanner.start(
+            cameraId,
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 }
+            },
+            onScanSuccess,
+            function() {}
+          );
+        })
+        .then(function() {
+          running = true;
+          startButton.style.display = 'none';
+          stopButton.style.display = 'block';
+          setMessage('Camera is active. Point it at the TAPL QR code.');
+        })
+        .catch(function(error) {
+          console.error(error);
+          startButton.disabled = false;
+
+          const name = error && error.name ? error.name : '';
+          if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+            setMessage('Camera permission was denied. Please use the browser/site settings to allow Camera access, then try again.');
+          } else if (name === 'NotFoundError') {
+            setMessage('No camera was found on this device.');
+          } else if (name === 'NotReadableError') {
+            setMessage('The camera is busy or already being used by another app/tab.');
+          } else {
+            setMessage('Could not start the camera. ' + (error && error.message ? error.message : 'Please try again.'));
+          }
+        });
+    }
+
+    function stopScanner() {
+      if (!scanner || !running) return;
+
+      scanner.stop()
+        .then(function() {
+          scanner.clear();
+        })
+        .catch(function(error) {
+          console.error(error);
+        })
+        .finally(function() {
+          running = false;
+          scanner = null;
+          document.getElementById('startButton').style.display = 'block';
+          document.getElementById('startButton').disabled = false;
+          document.getElementById('stopButton').style.display = 'none';
+        });
+    }
+
+    function onScanSuccess(decodedText) {
+      if (completed) return;
+
+      const token = String(decodedText || '').trim().toUpperCase();
+
+      if (!/^CAN-\d{6}$/.test(token)) {
+        setMessage('This is not a valid TAPL meal QR code. Please scan the employee QR shown in the canteen system.');
+        return;
+      }
+
+      completed = true;
+
+      setMessage('QR code scanned successfully. Returning to Vendor Portal...', true);
+
+      if (scanner && running) {
+        scanner.stop()
+          .then(function() { scanner.clear(); })
+          .catch(function() {})
+          .finally(function() {
+            running = false;
+            sendToken(token);
+          });
+      } else {
+        sendToken(token);
+      }
+    }
+
+    function sendToken(token) {
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage(
+            {
+              type: 'TAPL_QR_SCANNED',
+              token: token
+            },
+            returnOrigin
+          );
+
+          setTimeout(function() {
+            window.close();
+          }, 350);
+        } else {
+          setMessage('Vendor Portal window is no longer open. Please close this tab and scan again.');
+        }
+      } catch (error) {
+        console.error(error);
+        setMessage('Could not return the scanned token to the Vendor Portal.');
+      }
+    }
+  </script>
+</body>
+</html>
