@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Canteen Vendor Portal</title>
+
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    body {
+
+      margin: 0;
+
+      padding: 20px;
+
+      font-family: Arial, sans-serif;
+
+      background: #ffffff;
+
+    }
+
+
+    .container {
+
+      max-width: 500px;
+
+      margin: 40px auto;
+
+      background: #ffffff;
+
+      padding: 30px;
+
+      border-radius: 15px;
+
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+
+    }
+
+
+    .header {
+
+      text-align: center;
+
+      margin-bottom: 30px;
+
+    }
+
+
+    .header h1 {
+
+      color: #F57C00;
+
+      margin-bottom: 8px;
+
+    }
+
+
+    .header p {
+
+      color: #666666;
+
+      margin: 0;
+
+    }
+
+
+    label {
+
+      display: block;
+
+      margin-top: 20px;
+
+      margin-bottom: 7px;
+
+      font-weight: bold;
+
+      color: #F57C00;
+
+    }
+
+
+    input {
+
+      width: 100%;
+
+      padding: 15px;
+
+      border: 1px solid #dddddd;
+
+      border-radius: 8px;
+
+      font-size: 18px;
+
+      outline: none;
+
+    }
+
+
+    input:focus {
+
+      border-color: #F57C00;
+
+      box-shadow: 0 0 0 2px rgba(245, 124, 0, 0.15);
+
+    }
+
+
+    button {
+
+      width: 100%;
+
+      padding: 15px;
+
+      margin-top: 15px;
+
+      border: none;
+
+      border-radius: 8px;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+    }
+
+
+    .verify-button {
+
+      background: #F57C00;
+
+      color: white;
+
+    }
+
+
+    .verify-button:hover {
+
+      background: #E65100;
+
+    }
+
+
+    .grant-button {
+
+      background: #F57C00;
+
+      color: white;
+
+      margin-top: 20px;
+
+    }
+
+
+    .grant-button:hover {
+
+      background: #E65100;
+
+    }
+
+
+    .clear-button {
+
+      background: #eeeeee;
+
+      color: #333333;
+
+    }
+
+
+    button:disabled {
+
+      opacity: 0.6;
+
+      cursor: not-allowed;
+
+    }
+
+
+    #result {
+
+      margin-top: 25px;
+
+    }
+
+
+    .valid {
+
+      background: #ffffff;
+
+      border: 1px solid #F57C00;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+    }
+
+
+    .valid h2 {
+
+      color: #F57C00;
+
+      margin-top: 0;
+
+    }
+
+
+    .invalid {
+
+      background: #fff5eb;
+
+      border: 1px solid #F57C00;
+
+      color: #E65100;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+    }
+
+
+    .invalid h2 {
+
+      color: #E65100;
+
+      margin-top: 0;
+
+    }
+
+
+    .used {
+
+      background: #fff5eb;
+
+      border: 1px solid #F57C00;
+
+      color: #E65100;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+    }
+
+
+    .used h2 {
+
+      color: #E65100;
+
+      margin-top: 0;
+
+    }
+
+
+    .employee-name {
+
+      font-size: 22px;
+
+      font-weight: bold;
+
+      color: #F57C00;
+
+      margin: 10px 0;
+
+    }
+
+
+    .details {
+
+      line-height: 1.8;
+
+      color: #444444;
+
+    }
+
+
+    .status {
+
+      font-weight: bold;
+
+      text-transform: uppercase;
+
+      color: #F57C00;
+
+    }
+
+
+    .success-message {
+
+      background: #ffffff;
+
+      border: 1px solid #F57C00;
+
+      padding: 25px;
+
+      border-radius: 10px;
+
+      text-align: center;
+
+      color: #444444;
+
+    }
+
+
+    .success-message h2 {
+
+      margin-top: 0;
+
+      color: #F57C00;
+
+    }
+
+
+    .success-message strong {
+
+      color: #F57C00;
+
+    }
+
+
+
+    /* ========================================
+       EVIDUSCA TECHNOLOGIES FOOTER
+    ========================================= */
+
+    .brand-footer {
+      position: fixed;
+      bottom: 8px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .brand-footer .made-by {
+      color: #000000;
+    }
+
+    .brand-footer .evidusca {
+      color: #000000;
+    }
+
+    .brand-footer .technologies {
+      color: #FFD400;
+    }
+
+  
+    .scanner-section{margin-top:20px;padding:18px;border:1px solid #F57C00;border-radius:12px;background:#fffaf5}
+    #reader{width:100%;max-width:420px;margin:15px auto;overflow:hidden;border-radius:10px}
+    .scan-button{background:#333;color:#fff}
+    .scan-button:hover{background:#111}
+    .stop-button{background:#777;color:#fff}
+    .scan-status{font-size:13px;color:#666;margin-top:10px}
+  </style>
+
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<div class="header">
+
+  <img
+    src="https://evidusca.github.io/tapl-canteen-scanner/transafam-logo.png"
+    class="logo"
+    alt="TransAfam Power"
+  >
+
+  <h1>Canteen Vendor Portal</h1>
+
+  <p>Verify employee meal tokens</p>
+
+</div>
+
+
+  <label for="vendorName">
+
+    Vendor Name
+
+  </label>
+
+
+  <input
+
+    type="text"
+
+    id="vendorName"
+
+    placeholder="Enter your name"
+
+  >
+
+
+  
+  <div class="scanner-section">
+    <strong style="color:#F57C00;">Scan Employee QR Code</strong>
+    <button type="button" class="scan-button" id="scanButton" onclick="openScanner()">SCAN QR CODE</button>
+    <div id="scanStatus" class="scan-status">Tap SCAN QR CODE to open the camera scanner.</div>
+  </div>
+
+  <div style="margin-top:25px;border-top:1px solid #eeeeee;padding-top:20px;">
+    <div style="text-align:center;color:#777;font-size:13px;margin-bottom:10px;">
+      OR ENTER TOKEN MANUALLY
+    </div>
+
+
+
+  <label for="token">
+
+    Employee Token
+
+  </label>
+
+
+  <input
+
+    type="text"
+
+    id="token"
+
+    placeholder="Example: CAN-123456"
+
+    oninput="this.value = this.value.toUpperCase()"
+
+  >
+  </div>
+
+<button
+
+    type="button"
+
+    class="verify-button"
+
+    id="verifyButton"
+
+    onclick="verifyToken()"
+
+  >
+
+    Verify Token
+
+  </button>
+
+
+  <div id="result"></div>
+
+
+</div>
+
+
+<script>
+
+
+let verifiedToken = null;
+
+
+let verifiedRow = null;
+
+
+
+
+const SCANNER_URL = 'https://evidusca.github.io/tapl-canteen-scanner/Scanner.html';
+let scannerWindow = null;
+
+function openScanner() {
+  const status = document.getElementById('scanStatus');
+
+  if (!SCANNER_URL || SCANNER_URL.indexOf('YOUR-SCANNER-DOMAIN') !== -1) {
+    status.innerText = 'Scanner URL is not configured.';
+    return;
+  }
+
+  const returnOrigin = encodeURIComponent(window.location.origin);
+  const scannerUrl = SCANNER_URL + '?returnOrigin=' + returnOrigin;
+
+  scannerWindow = window.open(
+    scannerUrl,
+    'TAPL_QR_SCANNER',
+    'width=500,height=750,resizable=yes,scrollbars=yes'
+  );
+
+  if (!scannerWindow) {
+    status.innerText = 'The scanner window was blocked. Please allow pop-ups for this site and try again.';
+    return;
+  }
+
+  status.innerText = 'Scanner opened. Point the camera at the employee QR code.';
+}
+
+window.addEventListener('message', function(event) {
+  if (scannerWindow && event.source !== scannerWindow) return;
+
+  const data = event.data || {};
+  if (data.type !== 'TAPL_QR_SCANNED') return;
+
+  const token = String(data.token || '').trim().toUpperCase();
+
+  if (!/^CAN-\d{6}$/.test(token)) {
+    document.getElementById('scanStatus').innerText =
+      'Invalid QR code. Please scan a TAPL employee token QR code.';
+    return;
+  }
+
+  document.getElementById('token').value = token;
+  document.getElementById('scanStatus').innerText = 'QR code detected. Verifying...';
+
+  scannerWindow = null;
+  verifyToken();
+});
+
+// ======================================
+// VERIFY TOKEN
+// ======================================
+
+
+
+
+// ============================================================
+// GITHUB PAGES -> APPS SCRIPT JSONP CLIENT
+// ============================================================
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwnFk3S8dVmzx2mvJotn-9WkXU_myP0PQoOMb-IoMYs0QesnsULFGBqge3JbuNdLkYQ/exec';
+
+function callBackend(action, params, onSuccess, onFailure) {
+  if (!BACKEND_URL || BACKEND_URL.indexOf('PASTE-YOUR-APPS-SCRIPT') !== -1) {
+    if (onFailure) onFailure(new Error('Apps Script backend URL is not configured.'));
+    return;
+  }
+
+  const callbackName = '__taplApi_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+  const script = document.createElement('script');
+  let finished = false;
+
+  const cleanup = function() {
+    finished = true;
+    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+    if (script.parentNode) script.parentNode.removeChild(script);
+  };
+
+  window[callbackName] = function(response) {
+    if (finished) return;
+    cleanup();
+    if (onSuccess) onSuccess(response);
+  };
+
+  script.onerror = function() {
+    if (finished) return;
+    cleanup();
+    if (onFailure) onFailure(new Error('Could not connect to the canteen server.'));
+  };
+
+  const query = new URLSearchParams();
+  query.set('action', action);
+  query.set('callback', callbackName);
+
+  Object.keys(params || {}).forEach(function(key) {
+    query.set(key, params[key] == null ? '' : String(params[key]));
+  });
+
+  script.src = BACKEND_URL + (BACKEND_URL.indexOf('?') === -1 ? '?' : '&') + query.toString();
+  document.head.appendChild(script);
+
+  window.setTimeout(function() {
+    if (finished) return;
+    cleanup();
+    if (onFailure) onFailure(new Error('The server took too long to respond.'));
+  }, 20000);
+}
+
+function verifyToken() {
+
+
+  const token = document
+
+    .getElementById('token')
+
+    .value
+
+    .trim();
+
+
+  const vendorName = document
+
+    .getElementById('vendorName')
+
+    .value
+
+    .trim();
+
+
+  const result = document
+
+    .getElementById('result');
+
+
+  if (!vendorName) {
+
+
+    result.innerHTML = `
+
+      <div class="invalid">
+
+        Please enter the vendor's name.
+
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  if (!token) {
+
+
+    result.innerHTML = `
+
+      <div class="invalid">
+
+        Please enter the employee token.
+
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  result.innerHTML = `
+
+    <p style="color: #F57C00;">
+
+      Verifying token...
+
+    </p>
+
+  `;
+
+
+  document
+
+    .getElementById('verifyButton')
+
+    .disabled = true;
+
+  callBackend(
+    'verifyToken',
+    { token: token },
+    function(response) {
+
+
+      document
+
+        .getElementById('verifyButton')
+
+        .disabled = false;
+
+
+      if (response.success) {
+
+
+        verifiedToken = response.token;
+
+        verifiedRow = response.rowNumber;
+
+
+        result.innerHTML = `
+
+          <div class="valid">
+
+
+            <h2>VALID TOKEN</h2>
+
+
+            <div class="employee-name">
+
+              ${response.fullName}
+
+            </div>
+
+
+            <div class="details">
+
+              <strong>Staff ID:</strong>
+
+              ${response.staffId}
+
+              <br>
+
+
+              <strong>Status:</strong>
+
+              <span class="status">
+
+                ${response.status}
+
+              </span>
+
+            </div>
+
+
+            <button
+
+              type="button"
+
+              class="grant-button"
+
+              id="grantButton"
+
+              onclick="grantMeal()"
+
+            >
+
+              GRANT MEAL
+
+            </button>
+
+
+          </div>
+
+        `;
+
+
+      } else {
+
+
+        if (response.status === 'Used') {
+
+
+          result.innerHTML = `
+
+            <div class="used">
+
+              <h2>ALREADY USED</h2>
+
+              <p>
+
+                ${response.message}
+
+              </p>
+
+              <p>
+
+                Employee:
+
+                <strong>
+
+                  ${response.fullName || 'Unknown'}
+
+                </strong>
+
+              </p>
+
+            </div>
+
+          `;
+
+
+        } else {
+
+
+          result.innerHTML = `
+
+            <div class="invalid">
+
+              <h2>ACCESS DENIED</h2>
+
+              <p>
+
+                ${response.message}
+
+              </p>
+
+            </div>
+
+          `;
+
+
+        }
+
+
+      }
+
+
+    },
+    function(error) {
+
+
+      document
+
+        .getElementById('verifyButton')
+
+        .disabled = false;
+
+
+      result.innerHTML = `
+
+        <div class="invalid">
+
+          <h2>ERROR</h2>
+
+          <p>
+
+            An error occurred while verifying the token.
+
+            Please try again.
+
+          </p>
+
+        </div>
+
+      `;
+
+
+      console.log(error);
+
+
+    }
+  );
+
+
+}
+
+
+
+// ======================================
+// GRANT MEAL
+// ======================================
+
+
+function grantMeal() {
+
+
+  console.log('Grant Meal button clicked');
+
+
+  if (!verifiedToken) {
+
+
+    alert(
+
+      'Please verify a valid token first.'
+
+    );
+
+
+    return;
+
+  }
+
+
+  const vendorName = document
+
+    .getElementById('vendorName')
+
+    .value
+
+    .trim();
+
+
+  const result = document
+
+    .getElementById('result');
+
+
+  const grantButton = document
+
+    .getElementById('grantButton');
+
+
+  if (!vendorName) {
+
+
+    result.innerHTML = `
+
+      <div class="invalid">
+
+        Please enter the vendor's name.
+
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  // Disable button while processing
+
+  grantButton.disabled = true;
+
+  grantButton.innerText = 'PROCESSING...';
+
+
+  result.innerHTML = `
+
+    <p style="color: #F57C00;">
+
+      Granting meal access...
+
+    </p>
+
+  `;
+
+  callBackend(
+    'grantMeal',
+    { token: verifiedToken, vendorName: vendorName },
+    function(response) {
+
+
+      console.log(
+
+        'Grant response:',
+
+        response
+
+      );
+
+
+      grantButton.disabled = false;
+
+      grantButton.innerText = 'GRANT MEAL';
+
+
+      if (response.success) {
+
+
+        result.innerHTML = `
+
+          <div class="success-message">
+
+
+            <h2>MEAL GRANTED</h2>
+
+
+            <p>
+
+              Meal access has been successfully granted.
+
+            </p>
+
+
+            <p>
+
+              <strong>
+
+                ${response.fullName}
+
+              </strong>
+
+            </p>
+
+
+            <p>
+
+              Staff ID:
+
+              ${response.staffId}
+
+            </p>
+
+
+            <p>
+
+              Time:
+
+              ${response.time}
+
+            </p>
+
+
+            <p>
+
+              Record ID:
+
+              ${response.recordId}
+
+            </p>
+
+
+          </div>
+
+        `;
+
+
+        verifiedToken = null;
+
+        verifiedRow = null;
+
+
+        document
+
+          .getElementById('token')
+
+          .value = '';
+
+
+      } else {
+
+
+        result.innerHTML = `
+
+          <div class="invalid">
+
+
+            <h2>MEAL NOT GRANTED</h2>
+
+
+            <p>
+
+              ${response.message}
+
+            </p>
+
+
+          </div>
+
+        `;
+
+
+      }
+
+
+    },
+    function(error) {
+
+
+      console.error(
+
+        'Grant Meal Error:',
+
+        error
+
+      );
+
+
+      grantButton.disabled = false;
+
+      grantButton.innerText = 'GRANT MEAL';
+
+
+      result.innerHTML = `
+
+        <div class="invalid">
+
+
+          <h2>ERROR</h2>
+
+
+          <p>
+
+            ${error.message ||
+
+            'An unknown error occurred.'}
+
+          </p>
+
+
+        </div>
+
+      `;
+
+
+    }
+  );
+
+
+}
+
+
+</script>
+
+
+  <div class="brand-footer">
+    <span class="made-by">Made by </span><span class="evidusca">Evidusca </span><span class="technologies">Technologies</span>
+  </div>
+
+
+</body>
+
+</html>

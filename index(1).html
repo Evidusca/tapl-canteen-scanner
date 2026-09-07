@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>TAPL Canteen Meal Access</title>
+
+
+  <style>
+
+    /* ========================================
+       GENERAL PAGE STYLING
+    ======================================== */
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    body {
+
+      font-family: Arial, sans-serif;
+
+      background: #ffffff;
+
+      margin: 0;
+
+      padding: 20px;
+
+      min-height: 100vh;
+
+    }
+
+
+    /* ========================================
+       MAIN CONTAINER
+    ======================================== */
+
+    .container {
+
+      width: 100%;
+
+      max-width: 450px;
+
+      margin: 50px auto;
+
+      background: #ffffff;
+
+      padding: 30px;
+
+      border-radius: 15px;
+
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.10);
+
+      text-align: center;
+
+    }
+
+
+    /* ========================================
+       TAPL LOGO
+    ======================================== */
+
+    .logo {
+
+      width: 130px;
+
+      height: auto;
+
+      max-height: 100px;
+
+      object-fit: contain;
+
+      display: block;
+
+      margin: 0 auto 20px auto;
+
+    }
+
+
+    /* ========================================
+       PAGE TITLE
+    ======================================== */
+
+    h1 {
+
+      color: #F57C00;
+
+      margin-top: 0;
+
+      margin-bottom: 10px;
+
+      font-size: 26px;
+
+    }
+
+
+    /* ========================================
+       DESCRIPTION
+    ======================================== */
+
+    p {
+
+      color: #666666;
+
+      line-height: 1.6;
+
+    }
+
+
+    /* ========================================
+       STAFF ID INPUT
+    ======================================== */
+
+    input {
+
+      width: 100%;
+
+      padding: 14px;
+
+      margin-top: 15px;
+
+      border: 1px solid #dddddd;
+
+      border-radius: 8px;
+
+      box-sizing: border-box;
+
+      font-size: 16px;
+
+      outline: none;
+
+      transition: 0.3s;
+
+    }
+
+
+    input:focus {
+
+      border-color: #F57C00;
+
+      box-shadow: 0 0 0 2px rgba(245, 124, 0, 0.15);
+
+    }
+
+
+    /* ========================================
+       GENERATE TOKEN BUTTON
+    ======================================== */
+
+    button {
+
+      width: 100%;
+
+      padding: 14px;
+
+      margin-top: 15px;
+
+      background: #F57C00;
+
+      color: white;
+
+      border: none;
+
+      border-radius: 8px;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+      transition: 0.3s;
+
+    }
+
+
+    button:hover {
+
+      background: #E65100;
+
+    }
+
+
+    button:active {
+
+      transform: scale(0.98);
+
+    }
+
+
+    button:disabled {
+
+      background: #cccccc;
+
+      cursor: not-allowed;
+
+      transform: none;
+
+    }
+
+
+    /* ========================================
+       RESULT AREA
+    ======================================== */
+
+    #result {
+
+      margin-top: 20px;
+
+    }
+
+
+    /* ========================================
+       SUCCESS MESSAGE
+    ======================================== */
+
+    .success {
+
+      background: #ffffff;
+
+      border: 2px solid #F57C00;
+
+      padding: 20px;
+
+      border-radius: 10px;
+
+    }
+
+
+    .success h3 {
+
+      color: #F57C00;
+
+      margin-top: 0;
+
+      margin-bottom: 15px;
+
+    }
+
+
+    .success p {
+
+      color: #444444;
+
+      margin: 8px 0;
+
+    }
+
+
+    /* ========================================
+       ERROR MESSAGE
+    ======================================== */
+
+    .error {
+
+      background: #fff5eb;
+
+      border: 1px solid #F57C00;
+
+      color: #E65100;
+
+      padding: 15px;
+
+      border-radius: 10px;
+
+      line-height: 1.5;
+
+    }
+
+
+    /* ========================================
+       TOKEN DISPLAY
+    ======================================== */
+
+    .token {
+
+      font-size: 30px;
+
+      font-weight: bold;
+
+      letter-spacing: 3px;
+
+      color: #F57C00;
+
+      background: #fff5eb;
+
+      border: 1px dashed #F57C00;
+
+      padding: 15px;
+
+      margin: 15px 0;
+
+      border-radius: 8px;
+
+    }
+
+
+    /* ========================================
+       LOADING MESSAGE
+    ======================================== */
+
+    .loading {
+
+      color: #F57C00;
+
+      font-weight: bold;
+
+      padding: 10px;
+
+    }
+
+
+    /* ========================================
+       MOBILE RESPONSIVENESS
+    ======================================== */
+
+    @media (max-width: 500px) {
+
+      body {
+
+        padding: 15px;
+
+      }
+
+
+      .container {
+
+        margin: 20px auto;
+
+        padding: 25px 20px;
+
+      }
+
+
+      .logo {
+
+        width: 110px;
+
+      }
+
+
+      h1 {
+
+        font-size: 22px;
+
+      }
+
+
+      .token {
+
+        font-size: 24px;
+
+      }
+
+    }
+.brand-footer {
+  position: fixed;
+  bottom: 8px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 1000;
+}
+
+.brand-footer .made-by {
+  color: black;
+}
+
+.brand-footer .evidusca {
+  color: black;
+}
+
+.brand-footer .technologies {
+  color: #FFD400;
+}
+  
+    .qr-section{margin-top:20px;padding:18px;border:1px solid #F57C00;border-radius:12px;background:#fffaf5}
+    #qrcode{width:220px;min-height:220px;margin:15px auto;display:flex;align-items:center;justify-content:center;background:#fff;padding:10px;border-radius:10px}
+    #qrcode img,#qrcode canvas{max-width:100%;height:auto}
+    .download-qr{background:#333;color:#fff}
+    .download-qr:hover{background:#111}
+    .qr-note{font-size:13px;color:#666;margin-top:8px}
+  </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+
+<body>
+
+
+  <div class="container">
+
+
+    <!-- ========================================
+         TAPL LOGO
+    ========================================= -->
+
+   <!-- Replace only the img tag with this -->
+<img
+  src="https://evidusca.github.io/tapl-canteen-scanner/transafam-logo.png"
+  class="logo"
+  alt="TransAfam Power">
+
+
+    <!-- ========================================
+         PAGE TITLE
+    ========================================= -->
+
+    <h1>
+
+      TAPL Canteen Meal Access
+
+    </h1>
+
+
+    <!-- ========================================
+         PAGE DESCRIPTION
+    ========================================= -->
+
+    <p>
+
+      Enter your Staff ID to generate your meal token for today.
+
+    </p>
+
+
+    <!-- ========================================
+         STAFF ID INPUT
+    ========================================= -->
+
+    <input
+
+      type="text"
+
+      id="staffId"
+
+      placeholder="Enter Staff ID"
+
+      autocomplete="off"
+
+    >
+
+
+    <!-- ========================================
+         GENERATE TOKEN BUTTON
+    ========================================= -->
+
+    <button
+
+      id="generateButton"
+
+      onclick="generateToken()"
+
+    >
+
+      Generate Today's Token
+
+    </button>
+
+
+    <!-- ========================================
+         RESULT AREA
+    ========================================= -->
+
+    <div id="result"></div>
+
+
+  </div>
+
+
+  <script>
+
+
+    // ========================================
+    // GENERATE DAILY MEAL TOKEN
+    // ========================================
+
+
+
+// ============================================================
+// GITHUB PAGES -> APPS SCRIPT JSONP CLIENT
+// ============================================================
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwnFk3S8dVmzx2mvJotn-9WkXU_myP0PQoOMb-IoMYs0QesnsULFGBqge3JbuNdLkYQ/exec';
+
+function callBackend(action, params, onSuccess, onFailure) {
+  if (!BACKEND_URL || BACKEND_URL.indexOf('PASTE-YOUR-APPS-SCRIPT') !== -1) {
+    if (onFailure) onFailure(new Error('Apps Script backend URL is not configured.'));
+    return;
+  }
+
+  const callbackName = '__taplApi_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+  const script = document.createElement('script');
+  let finished = false;
+
+  const cleanup = function() {
+    finished = true;
+    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+    if (script.parentNode) script.parentNode.removeChild(script);
+  };
+
+  window[callbackName] = function(response) {
+    if (finished) return;
+    cleanup();
+    if (onSuccess) onSuccess(response);
+  };
+
+  script.onerror = function() {
+    if (finished) return;
+    cleanup();
+    if (onFailure) onFailure(new Error('Could not connect to the canteen server.'));
+  };
+
+  const query = new URLSearchParams();
+  query.set('action', action);
+  query.set('callback', callbackName);
+
+  Object.keys(params || {}).forEach(function(key) {
+    query.set(key, params[key] == null ? '' : String(params[key]));
+  });
+
+  script.src = BACKEND_URL + (BACKEND_URL.indexOf('?') === -1 ? '?' : '&') + query.toString();
+  document.head.appendChild(script);
+
+  window.setTimeout(function() {
+    if (finished) return;
+    cleanup();
+    if (onFailure) onFailure(new Error('The server took too long to respond.'));
+  }, 20000);
+}
+
+    function generateToken() {
+
+
+      // Get Staff ID
+
+      const staffId = document
+
+        .getElementById('staffId')
+
+        .value
+
+        .trim();
+
+
+      // Get result area
+
+      const result = document
+
+        .getElementById('result');
+
+
+      // Get button
+
+      const button = document
+
+        .getElementById('generateButton');
+
+
+      // ========================================
+      // CHECK IF STAFF ID WAS ENTERED
+      // ========================================
+
+      if (!staffId) {
+
+
+        result.innerHTML = `
+
+          <div class="error">
+
+            Please enter your Staff ID.
+
+          </div>
+
+        `;
+
+
+        return;
+
+      }
+
+
+      // ========================================
+      // SHOW LOADING MESSAGE
+      // ========================================
+
+      result.innerHTML = `
+
+        <div class="loading">
+
+          Checking your account...
+
+        </div>
+
+      `;
+
+
+      // Disable button while processing
+
+      button.disabled = true;
+
+      button.innerText = 'Checking...';
+
+
+      // ========================================
+      // CALL GOOGLE APPS SCRIPT
+      // ========================================
+
+      callBackend(
+        'generateToken',
+        { staffId: staffId },
+        function(response) {
+
+          // Enable button again
+          button.disabled = false;
+          button.innerText = "Generate Today's Token";
+
+          if (response.success) {
+
+            result.innerHTML = `
+              <div class="success">
+                <h3>Token Generated Successfully</h3>
+                <p><strong>${response.fullName}</strong></p>
+                <p>Staff ID: <strong>${response.staffId}</strong></p>
+                <div class="token">${response.token}</div>
+                <div class="qr-section">
+                  <h3 style="margin:0;color:#F57C00;">Your Meal QR Code</h3>
+                  <div id="qrcode"></div>
+                  <p class="qr-note">Show this QR code to the canteen vendor for scanning.</p>
+                  <button type="button" class="download-qr" onclick="downloadQRCode()">Save QR Code</button>
+                </div>
+                <p>Valid for today only.</p>
+                <p>Present this token to the canteen vendor to receive your meal.</p>
+              </div>
+            `;
+
+            setTimeout(function() { createQRCode(response.token); }, 100);
+          } else {
+            result.innerHTML = `<div class="error">${response.message}</div>`;
+          }
+        },
+        function(error) {
+          button.disabled = false;
+          button.innerText = "Generate Today's Token";
+          result.innerHTML = `<div class="error">An error occurred while checking your account. Please try again.</div>`;
+          console.log(error);
+        }
+      );
+
+
+    }
+
+
+    // ========================================
+    // ALLOW ENTER KEY TO SUBMIT
+    // ========================================
+
+    document
+
+      .getElementById('staffId')
+
+      .addEventListener(
+
+        'keypress',
+
+        function(event) {
+
+
+          if (event.key === 'Enter') {
+
+
+            generateToken();
+
+
+          }
+
+
+        }
+
+      );
+
+
+  
+    function createQRCode(token) {
+      const box = document.getElementById('qrcode');
+      if (!box) return;
+      if (typeof QRCode === 'undefined') {
+        box.innerHTML = '<div style="color:#E65100;font-size:13px;text-align:center;padding:20px;">QR generator failed to load. Please refresh the page.</div>';
+        return;
+      }
+      box.innerHTML = '';
+      new QRCode(box, {
+        text: String(token),
+        width: 200,
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function downloadQRCode() {
+      const box = document.getElementById('qrcode');
+      if (!box) return;
+      const canvas = box.querySelector('canvas');
+      const img = box.querySelector('img');
+      const url = canvas ? canvas.toDataURL('image/png') : (img ? img.src : '');
+      if (!url) { alert('QR code is not ready yet.'); return; }
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'TAPL-Meal-QR.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+</script>
+
+<div class="brand-footer">
+  <span class="made-by">Made by </span>
+  <span class="evidusca">Evidusca </span>
+  <span class="technologies">Technologies</span>
+</div>
+
+
+</body>
+
+</html>
