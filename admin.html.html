@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAPL Canteen Admin</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7f8;color:#222}
+.container{max-width:1100px;margin:30px auto;padding:20px}
+.card{background:#fff;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 3px 15px rgba(0,0,0,.08)}
+.logo{width:100px;display:block;margin:0 auto 12px}
+.header{text-align:center}
+h1{margin:5px 0}
+input{width:100%;padding:13px;border:1px solid #ccc;border-radius:8px;margin:7px 0 14px;font-size:16px}
+button{border:0;border-radius:8px;padding:13px 18px;font-weight:bold;cursor:pointer}
+.primary{width:100%;background:#16833b;color:white}
+.logout{background:#eee}
+#dashboard{display:none}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.stat{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.stat h3{margin:0 0 8px;font-size:14px;color:#666}
+.stat strong{font-size:30px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{text-align:left;padding:11px;border-bottom:1px solid #eee;font-size:14px}
+.message{text-align:center;margin-top:12px}
+@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="card" id="login">
+    <div class="header">
+      <img class="logo" src="https://evidusca.github.io/tapl-canteen-scanner/transafam-logo.png" alt="TransAfam Power">
+      <h1>Administrator Sign In</h1>
+      <p>Canteen Management Dashboard</p>
+    </div>
+
+    <input id="adminName" value="Administrator" readonly>
+    <input id="adminPin" type="password" placeholder="Administrator PIN" autocomplete="current-password">
+    <button class="primary" id="loginButton" onclick="login()">SIGN IN</button>
+    <div class="message" id="loginMessage"></div>
+  </div>
+
+  <div id="dashboard">
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <div>
+          <h2 style="margin:0">Canteen Dashboard</h2>
+          <div id="dateText"></div>
+        </div>
+        <button class="logout" onclick="location.reload()">SIGN OUT</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="stat"><h3>TOKENS TODAY</h3><strong id="tokensToday">0</strong></div>
+      <div class="stat"><h3>MEALS GRANTED</h3><strong id="usedToday">0</strong></div>
+      <div class="stat"><h3>UNUSED TOKENS</h3><strong id="unusedToday">0</strong></div>
+      <div class="stat"><h3>OTHER/EXPIRED</h3><strong id="expiredOrOther">0</strong></div>
+    </div>
+
+    <div class="card">
+      <h2>Meals by Vendor</h2>
+      <table>
+        <thead><tr><th>Vendor</th><th>Meals</th></tr></thead>
+        <tbody id="vendorTable"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Recent Meal Records</h2>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Staff ID</th><th>Name</th><th>Token</th><th>Record ID</th></tr>
+        </thead>
+        <tbody id="recentTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BACKEND_URL='https://script.google.com/macros/s/AKfycbwnFk3S8dVmzx2mvJotn-9WkXU_myP0PQoOMb-IoMYs0QesnsULFGBqge3JbuNdLkYQ/exec';
+let sessionToken=null;
+
+function esc(v){
+  return String(v==null?'':v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+function api(action,params,onSuccess,onFailure){
+  const cb='taplAdmin_'+Date.now()+'_'+Math.floor(Math.random()*100000);
+  const s=document.createElement('script');
+  let done=false;
+  function clean(){done=true;delete window[cb];if(s.parentNode)s.parentNode.removeChild(s)}
+  window[cb]=r=>{if(done)return;clean();onSuccess(r)};
+  s.onerror=()=>{if(done)return;clean();if(onFailure)onFailure(new Error('Could not connect to the canteen server.'))};
+  const q=new URLSearchParams({action,callback:cb});
+  Object.keys(params||{}).forEach(k=>q.set(k,params[k]==null?'':String(params[k])));
+  s.src=BACKEND_URL+'?'+q.toString();
+  document.head.appendChild(s);
+  setTimeout(()=>{if(done)return;clean();if(onFailure)onFailure(new Error('Server timeout.'))},20000);
+}
+
+function login(){
+  const pin=document.getElementById('adminPin').value.trim();
+  const msg=document.getElementById('loginMessage');
+  const btn=document.getElementById('loginButton');
+  if(!pin){msg.textContent='Enter the Administrator PIN.';return}
+  btn.disabled=true;btn.textContent='SIGNING IN...';msg.textContent='Authenticating...';
+
+  api('vendorLogin',{vendorName:'Administrator',vendorPin:pin},r=>{
+    if(r&&r.success){
+      sessionToken=r.sessionToken;
+      document.getElementById('login').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      loadDashboard();
+    }else{
+      btn.disabled=false;btn.textContent='SIGN IN';
+      msg.textContent=(r&&r.message)||'Authentication failed.';
+    }
+  },e=>{
+    btn.disabled=false;btn.textContent='SIGN IN';
+    msg.textContent=e.message;
+  });
+}
+
+function loadDashboard(){
+  api('adminDashboard',{sessionToken},r=>{
+    if(!r||!r.success){
+      alert((r&&r.message)||'Could not load dashboard.');
+      return;
+    }
+
+    document.getElementById('dateText').textContent='Date: '+esc(r.date);
+    document.getElementById('tokensToday').textContent=r.tokensToday;
+    document.getElementById('usedToday').textContent=r.usedToday;
+    document.getElementById('unusedToday').textContent=r.unusedToday;
+    document.getElementById('expiredOrOther').textContent=r.expiredOrOther;
+
+    const vendors=r.mealsByVendor||{};
+    document.getElementById('vendorTable').innerHTML=
+      Object.keys(vendors).length
+      ? Object.keys(vendors).map(v=>'<tr><td>'+esc(v)+'</td><td>'+esc(vendors[v])+'</td></tr>').join('')
+      : '<tr><td colspan="2">No meals recorded today.</td></tr>';
+
+    const meals=r.recentMeals||[];
+    document.getElementById('recentTable').innerHTML=
+      meals.length
+      ? meals.map(x=>'<tr><td>'+esc(x.time)+'</td><td>'+esc(x.staffId)+'</td><td>'+esc(x.fullName)+'</td><td>'+esc(x.token)+'</td><td>'+esc(x.recordId)+'</td></tr>').join('')
+      : '<tr><td colspan="5">No meal records yet.</td></tr>';
+
+  },e=>alert(e.message));
+}
+</script>
+</body>
+</html>
